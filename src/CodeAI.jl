@@ -172,7 +172,12 @@ function refactor(config::Configuration, prompt::String;  code = ANS[],
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
   r.status != 200 && error("Error refactoring $lang code: $(response.status)")
 
-  g = r.response.choices[begin][:message][:content] |> JSON3.read
+  g = try
+    r.response.choices[begin][:message][:content] |> JSON3.read
+  catch e
+    @error "Error parsing response: $(r.response.choices[begin][:message][:content])"
+    rethrow(e)
+  end
 
   !isempty(g["r"]["e"]) && error("Error refactoring code: $(g["r"]["e"])")
 

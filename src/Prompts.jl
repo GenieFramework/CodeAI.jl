@@ -1,10 +1,14 @@
 module Prompts
 
-function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothing, dc = true)
+
+const PROMPT = Ref("")
+
+
+function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothing, dc = fn)
   prompt = """
     You are an expert $lang developer and generate high quality $lang code.
     You answer only with JSON, in the following format: "
-    {"r":{"c":<response>,"e":<error>}}
+    {"r":{"c":"<response>","e":"<error>"}}
     ".
     If you don't know the answer, leave `c` empty and set `e` to "unknown".
   """
@@ -15,12 +19,12 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
 
   if fname !== nothing
     prompt *= "The function name is $fname."
-  else
+  elseif fn
     prompt *= "Pick function name to reflect functionality."
   end
 
   dc && (prompt *= """
-    Add doc string to function.
+    Add doc string to function. Do not wrap the doc string in backticks.
   """)
 
   lang == "Julia" && (prompt *= """
@@ -33,17 +37,9 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     Don't generate the whole HTML document, only the requested HTML snippet.
   """)
 
+  PROMPT[] = prompt
+
   return prompt
-end
-
-
-function julia(; fn = true, fname::Union{Nothing, String} = nothing, dc = false)
-  return system("Julia"; fn, fname, dc)
-end
-
-
-function html()
-  return system("HTML"; fn = false, fname = nothing, dc = false)
 end
 
 
@@ -62,8 +58,11 @@ function refactor(code::String, prompt::String; implementation_only = true)
     You can only change the implementation of the function. Do not change the function name.
   """)
 
+  PROMPT[] = prompt
+
   return prompt
 end
+
 
 function explain(code::String, prompt::String = "")
   prompt = """
@@ -74,6 +73,8 @@ function explain(code::String, prompt::String = "")
 
     $prompt
   """
+
+  PROMPT[] = prompt
 
   return prompt
 end
@@ -93,6 +94,8 @@ function debug(code::String, error::String, prompt::String = "")
 
     $prompt
   """
+
+  PROMPT[] = prompt
 
   return prompt
 end
