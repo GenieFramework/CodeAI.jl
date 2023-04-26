@@ -10,7 +10,7 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     You answer only with JSON, in the following format: "
     {"r":{"c":"<response>","e":"<error>"}}
     ".
-    If you don't know the answer, leave `c` empty and set `e` to "unknown".
+    If you don't know the answer, leave `c` empty and set `e` to your error message explaining how to improve the request.
   """
 
   fn && (prompt *= """
@@ -27,13 +27,13 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     Add doc string to function. Do not wrap the doc string in backticks.
   """)
 
-  lang == "Julia" && (prompt *= """
+  lowercase(lang) == "julia" && (prompt *= """
     Use as much as possible Julia's built-in functions and libraries and the most popular packages.
     Use the most popular style guide and best practices and idiomatic Julia code.
     Add type annotations to function arguments and return values.
   """)
 
-  lang == "HTML" && (prompt *= """
+  lowercase(lang) == "html" && (prompt *= """
     Don't generate the whole HTML document, only the requested HTML snippet.
   """)
 
@@ -43,7 +43,7 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
 end
 
 
-function refactor(code::String, prompt::String; implementation_only = true)
+function refactor(code::String, prompt::String; implementation_only = true, fn = true)
   prompt = """
     Refactor the following code:
     ```
@@ -54,11 +54,9 @@ function refactor(code::String, prompt::String; implementation_only = true)
 
   """
 
-  implementation_only && (prompt *= """
+  implementation_only && fn && (prompt *= """
     You can only change the implementation of the function. Do not change the function name.
   """)
-
-  PROMPT[] = prompt
 
   return prompt
 end

@@ -161,12 +161,13 @@ function refactor(config::Configuration, prompt::String;  code = ANS[],
                                                           lang = LANG[],
                                                           model = config.defaults.model,
                                                           implementation_only = true,
+                                                          fn = !implementation_only,
                                                           system_prompt = Prompts.system(lang; fn = !implementation_only),
                                                           kwargs = nt(config.defaults)
 )
   messages = [
     Dict("role" => "system", "content" => system_prompt),
-    Dict("role" => "user", "content" => Prompts.refactor(code, prompt; implementation_only))
+    Dict("role" => "user", "content" => Prompts.refactor(code, prompt; implementation_only, fn))
   ]
 
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
