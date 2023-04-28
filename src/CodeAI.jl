@@ -196,13 +196,9 @@ function refactor(config::Configuration, prompt::String;  code = ANS[],
     Dict("role" => "user", "content" => Prompts.refactor(code, prompt; implementation_only, fn))
   ]
 
-  @show messages
-
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
   code = parseresponse(r)
   LANG[] = lang
-
-  @show code
 
   return code
 end
