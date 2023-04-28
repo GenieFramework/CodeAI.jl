@@ -26,9 +26,17 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     prompt *= "Pick function name to reflect functionality."
   end
 
-  dc && (prompt *= """
-    Add doc string to function. Do not wrap the doc string in backticks.
-  """)
+  if dc
+    prompt *= """
+      Document the function by adding a doc comment. Do not wrap the doc string in backticks.
+    """
+
+    if lowercase(lang) == "julia"
+      prompt *= """
+        In Julia doc comments are written above the function definition and wrapped in triple double quotes.
+      """
+    end
+  end
 
   lowercase(lang) == "julia" && (prompt *= """
     Use as much as possible Julia's built-in functions and libraries and the most popular packages.
