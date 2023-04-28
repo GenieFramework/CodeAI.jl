@@ -11,9 +11,9 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     You answer only with JSON, in the following format: "
     {"r":{"c":"<response>","e":"<error>"}}
     ".
-    If you don't know the answer, leave `c` empty and set `e` to your error message explaining how to improve the request.
+    At the end of your response, add the following string: $EOR.
+    If you don't know the answer, leave `c` empty and set `e` to your error message.
     Escape single quotes with backslash in your response.
-    Finish your answer with `$EOR`.
   """
 
   fn && (prompt *= """
@@ -53,7 +53,7 @@ function refactor(code::String, prompt::String; implementation_only = true, fn =
     $code
     ```
 
-    Change it so that $prompt.
+    Update code to $prompt.
 
   """
 

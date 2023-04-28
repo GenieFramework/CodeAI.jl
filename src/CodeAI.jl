@@ -97,7 +97,8 @@ function parseresponse(r)
   r.status != 200 && error("Error generating code with OpenAI")
 
   g = try
-    r.response.choices[begin][:message][:content] |> JSON3.read
+    endswith(r.response.choices[begin][:message][:content], Prompts.EOR) || error("Error abnormally terminated response $(r.response.choices[begin][:message][:content])")
+    r.response.choices[begin][:message][:content][1:end-length(Prompts.EOR)] |> JSON3.read
   catch e
     @error "Error parsing response: $(r.response.choices[begin][:message][:content])"
     rethrow(e)
@@ -105,9 +106,7 @@ function parseresponse(r)
 
   !isempty(g["r"]["e"]) && error("Error generating code $(g["r"]["e"])")
 
-  endswith(g["r"]["c"], Prompts.EOR) || error("Error abnormally terminated response")
-
-  return ANS[] = g["r"]["c"][1:end-length(Prompts.EOR)]
+  return ANS[] = g["r"]["c"]
 end
 
 
@@ -197,9 +196,13 @@ function refactor(config::Configuration, prompt::String;  code = ANS[],
     Dict("role" => "user", "content" => Prompts.refactor(code, prompt; implementation_only, fn))
   ]
 
+  @show messages
+
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
   code = parseresponse(r)
   LANG[] = lang
+
+  @show code
 
   return code
 end
