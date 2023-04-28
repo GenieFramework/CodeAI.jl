@@ -12,6 +12,10 @@ Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
 OpenAI = "e9f21f70-7185-4079-aca2-91159181367c"
 
 [compat]
+DotEnv = "0.3"
+HTTP = "1"
+JSON3 = "1"
+OpenAI = "0.8"
 julia = "1.6"
 
 [extras]
