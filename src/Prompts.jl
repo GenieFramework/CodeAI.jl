@@ -2,6 +2,7 @@ module Prompts
 
 
 const PROMPT = Ref("")
+const EOR = "::end::"
 
 
 function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothing, dc = fn)
@@ -12,6 +13,7 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     ".
     If you don't know the answer, leave `c` empty and set `e` to your error message explaining how to improve the request.
     Escape single quotes with backslash in your response.
+    Finish your answer with `$EOR`.
   """
 
   fn && (prompt *= """

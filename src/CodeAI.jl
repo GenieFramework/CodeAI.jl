@@ -89,6 +89,29 @@ end
 
 
 """
+# parseresponse
+
+Parses the given response and returns the corresponding code -- or throws an error.
+"""
+function parseresponse(r)
+  r.status != 200 && error("Error generating code with OpenAI")
+
+  g = try
+    r.response.choices[begin][:message][:content] |> JSON3.read
+  catch e
+    @error "Error parsing response: $(r.response.choices[begin][:message][:content])"
+    rethrow(e)
+  end
+
+  !isempty(g["r"]["e"]) && error("Error generating code $(g["r"]["e"])")
+
+  endswith(g["r"]["c"], Prompts.EOR) || error("Error abnormally terminated response")
+
+  return ANS[] = g["r"]["c"][1:end-length(Prompts.EOR)]
+end
+
+
+"""
 # code
 
 Generates a snippet of code based on the given prompt.
@@ -108,16 +131,10 @@ function code(config::Configuration, prompt::String;  lang = "Julia",
   ]
 
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
-  r.status != 200 && error("Error generating $lang code: $(response.status)")
-
-  g = r.response.choices[begin][:message][:content] |> JSON3.read
-
-  !isempty(g["r"]["e"]) && error("Error generating $lang code: $(g["r"]["e"])")
-
-  ANS[] = g["r"]["c"]
+  code = parseresponse(r)
   LANG[] = lang
 
-  return ANS[]
+  return code
 end
 
 
@@ -181,21 +198,10 @@ function refactor(config::Configuration, prompt::String;  code = ANS[],
   ]
 
   r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
-  r.status != 200 && error("Error refactoring $lang code: $(response.status)")
-
-  g = try
-    r.response.choices[begin][:message][:content] |> JSON3.read
-  catch e
-    @error "Error parsing response: $(r.response.choices[begin][:message][:content])"
-    rethrow(e)
-  end
-
-  !isempty(g["r"]["e"]) && error("Error refactoring code: $(g["r"]["e"])")
-
-  ANS[] = g["r"]["c"]
+  code = parseresponse(r)
   LANG[] = lang
 
-  return ANS[]
+  return code
 end
 
 
@@ -216,14 +222,7 @@ function explain(config::Configuration, prompt::String = "";  code = ANS[],
     Dict("role" => "user", "content" => Prompts.explain(code, prompt))
   ]
 
-  r = OpenAI.create_chat(config.api_key, model, messages; kwargs...)
-  r.status != 200 && error("Error explaining $lang code: $(response.status)")
-
-  g = r.response.choices[begin][:message][:content] |> JSON3.read
-
-  !isempty(g["r"]["e"]) && error("Error explaining code: $(g["r"]["e"])")
-
-  return g["r"]["c"]
+  return OpenAI.create_chat(config.api_key, model, messages; kwargs...) |> parseresponse
 end
 
 
