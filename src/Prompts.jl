@@ -11,6 +11,7 @@ function system(lang = "Julia"; fn = true, fname::Union{Nothing, String} = nothi
     {"r":{"c":"<response>","e":"<error>"}}
     ".
     If you don't know the answer, leave `c` empty and set `e` to your error message explaining how to improve the request.
+    Escape single quotes with backslash in your response.
   """
 
   fn && (prompt *= """
@@ -96,6 +97,11 @@ function debug(code::String, error::String, prompt::String = "")
   PROMPT[] = prompt
 
   return prompt
+end
+
+
+function prompt()
+  return PROMPT[]
 end
 
 end

@@ -122,6 +122,16 @@ end
 
 
 """
+# code
+
+Returns last generated code
+"""
+function code()
+  return ANS[]
+end
+
+
+"""
 # julia
 
 Generates a snippet of Julia code based on the given prompt.
